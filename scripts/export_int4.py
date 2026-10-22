@@ -60,7 +60,7 @@ def inspect_api() -> int:
     return 0
 
 
-def call_export(model: str, output: str, block_size: int, quantize_embedding: bool) -> int:
+def call_export(model: str, output: str, block_size: int, quantize_embedding: bool, recipe: str) -> int:
     mods = _load()
     fn = None
     for _, mod in mods:
@@ -78,14 +78,19 @@ def call_export(model: str, output: str, block_size: int, quantize_embedding: bo
     sig = inspect.signature(fn)
     kwargs = {}
     mapping = {
+        # 依据 2026-10-22 CI 日志中的真实签名：
+        # export(model, output_dir, quantization_recipe=..., bundle_litert_lm=..., use_jinja_template=...)
+        "model": model,
         "model_path": model,
         "model_name_or_path": model,
         "output_dir": output,
         "output_path": output,
+        "quantization_recipe": recipe,
+        "bundle_litert_lm": True,
+        "use_jinja_template": True,
         "block_size": block_size,
         "quantize_embedding": quantize_embedding,
         "quantize_embeddings": quantize_embedding,
-        "quantization": "int4",
     }
     for key, value in mapping.items():
         if key in sig.parameters:
@@ -109,6 +114,8 @@ def main() -> int:
     parser.add_argument("--output", default="out")
     parser.add_argument("--block-size", type=int, default=64)
     parser.add_argument("--quantize-embedding", default="true")
+    parser.add_argument("--recipe", default="dynamic_wi4c_afp32",
+                        help="int4 权重配方；int8 用 dynamic_wi8_afp32")
     parser.add_argument("--inspect", action="store_true")
     args = parser.parse_args()
 
@@ -116,7 +123,7 @@ def main() -> int:
         return inspect_api()
 
     quant = str(args.quantize_embedding).lower() in ("1", "true", "yes")
-    return call_export(args.model, args.output, args.block_size, quant)
+    return call_export(args.model, args.output, args.block_size, quant, args.recipe)
 
 
 if __name__ == "__main__":

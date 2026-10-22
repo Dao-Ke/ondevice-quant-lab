@@ -54,7 +54,8 @@ jobs:
             --model model \
             --output out \
             --block-size "${{ inputs.block_size }}" \
-            --quantize-embedding "${{ inputs.quantize_embedding }}"
+            --quantize-embedding "${{ inputs.quantize_embedding }}" \
+            --recipe dynamic_wi4c_afp32
 
       - name: Inspect artifact (size gate)
         run: |
