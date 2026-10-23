@@ -62,7 +62,7 @@ jobs:
           set -e
           f=$(ls out/*.litertlm | head -1)
           ls -lh "$f"
-          uvx --from litert-lm-builder litert-lm-peek --litertlm_file "$f" \
+          litert-lm-peek --litertlm_file "$f" \
             | grep -E "Section [0-9]+:|Data Type|Begin Offset|End Offset"
           size=$(stat -c%s "$f")
           echo "artifact_bytes=$size"
